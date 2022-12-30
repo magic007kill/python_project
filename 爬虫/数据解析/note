@@ -1,0 +1,63 @@
+web请求过程解析：
+    —— 1.服务器渲染：在服务器那边直接把数据和html整合在一起，统一返回给浏览器。
+         在页面源代码中能看到数据。
+    —— 2.客户端渲染：第一次请求只要一个html骨架，第二次请求拿到数据，进行数据展示。
+         在页面源代码中看不到数据
+
+http协议：
+    —— 请求：请求行-> 请求方式（一般为get/post）请求url地址协议
+            请求头-> 放一些服务器要使用的附加信息
+                 请求头中最常见额的一些重要内容(爬虫需要)：
+                    1. User_Agent:请求载体的身份标识
+                    2. Referer:防盗链(这次请求是从哪个页面来的？反爬会用到)
+                    3. cookie:本地字符串数据信息(用户登录信息，反爬的token)
+            请求体 -> 一般放一些请求参数
+
+    —— 响应：状态行-> 协议 状态码（200就OK）
+            响应头-> 放一些客户端要使用的附加信息
+                响应头中最常见额的一些重要内容：
+                    1. cookie:本地字符串数据信息(用户登录信息，反爬的token)
+                    2. 各种神奇的莫名其妙的字符串(这个需要经验，一般都是token字样，防止各种攻击和反爬)
+            响应体 -> 服务器返回的真正客户端要用的内容(HTML，json)等
+
+
+聚焦爬虫：爬取页面指定的页面内容
+    —— 编码流程：
+        —— 指定url
+        —— 发起请求
+        —— 获取响应数据
+        —— 数据解析
+        —— 持久化存储
+
+数据解析分类：
+    —— 正则
+    —— bs4
+    —— xpath(重点)
+
+数据解析原理概述：
+    —— 解析的局部的文本内容都会在标签之间或者标签对应的属性中进行存储
+    —— 1.进行指定标签的定位
+    —— 2.标签或者标签对应的属性中存储的数据值进行提取(提取)
+
+解决抓取网页的中文乱码问题（还有其他方法：请查看：https://huaweicloud.csdn.net/6380300ddacf622b8df86681.html）
+    —— apparent_encoding
+    page = requests.get(url=url, headers=headers)
+    page.encoding = page.apparent_encoding
+    # 存储验证
+    with open('图片地址.html', 'w', encoding='utf-8') as fp:
+         fp.write(page.text)
+网页源代码中a标签的说明
+    —— a标签表示超链接，结构：<a href=‘url’>'显示的字符'</a>
+
+
+
+抓取新浪军事图片样例：
+
+<div class="item"><div class="bg"></div><div class="hd"><a target="_blank" href="http://slide.mil.news.sina.com.cn/slide_8_260_139508.html">
+<img src="//z0.sinaimg.cn/auto/resize?size=235_156&amp;img=http://n.sinaimg.cn/front/200/w600h400/20221221/8af3-2dbb341a8aee157f3aafc9ea13ecac95.jpg" alt="日本空自全球鹰首飞">
+</a></div><div class="bd"><h3><a href="http://slide.mil.news.sina.com.cn/slide_8_260_139508.html" title="日本空自全球鹰无人机在三泽空军基地首飞">日本空自全球鹰首飞</a></h3><p>日本防卫省计划部署在航空自卫队三泽基地（青森县三泽市）的美国产无人侦察机“全球鹰”，已确认1架...</p></div><div class="ft"><span class="time"><i></i>12/21 14:53</span><a node-type="smallCmnt" action-data="jc_slidenews-album-260-139508" title="评论" href="http://slide.mil.news.sina.com.cn/slide_8_260_139508.html#J_Comment_Wrap" class="comment"><i></i>0</a><span node-type="smallLike" action-data="jc_slidenews-album-260-139508" title="喜欢" class="like"><i></i>0</span></div>
+</div>
+编写抓取的正则表达式：
+
+ex = '<div class="item">.*?;img=(.*?)" alt.*?</div>'
+
